@@ -29,7 +29,10 @@ public class MainActivity extends AppCompatActivity {
     private String[] groupType = new String[]{
             "类型a",
             "类型b",
-            "类型c"
+            "类型c",
+            "类型d",
+            "类型e",
+            "类型f"
     };
 
     //列表各个群组数据
@@ -37,6 +40,9 @@ public class MainActivity extends AppCompatActivity {
             {new Bean("全选", false), new Bean("a1", false), new Bean("a2", false), new Bean("a3", false), new Bean("a4", false), new Bean("a5", false)},
             {new Bean("全选", false), new Bean("b1", false), new Bean("b2", false), new Bean("b3", false), new Bean("b4", false), new Bean("b5", false)},
             {new Bean("全选", false), new Bean("c1", false), new Bean("c2", false), new Bean("c3", false), new Bean("c4", false), new Bean("c5", false)},
+            {new Bean("全选", false), new Bean("d1", false), new Bean("d2", false), new Bean("d3", false), new Bean("d4", false), new Bean("d5", false)},
+            {new Bean("全选", false), new Bean("e1", false), new Bean("e2", false), new Bean("e3", false), new Bean("e4", false), new Bean("e5", false)},
+            {new Bean("全选", false), new Bean("f1", false), new Bean("f2", false), new Bean("f3", false), new Bean("f4", false), new Bean("f5", false)},
     };
 
     @Override
@@ -138,10 +144,10 @@ public class MainActivity extends AppCompatActivity {
                     //全选
                     if (children[groupPosition][childPosition].mark) {
                         //全选勾选→未勾选
-                        switchAll(parent,v,groupPosition,false,R.color.black);
+                        switchAllSelect(parent, v, groupPosition, false, R.color.black);
                     } else {
                         //全选未勾选→勾选
-                        switchAll(parent,v,groupPosition,true,R.color.colorAccent);
+                        switchAllSelect(parent, v, groupPosition, true, R.color.colorAccent);
                     }
 
                 }
@@ -150,9 +156,14 @@ public class MainActivity extends AppCompatActivity {
                 if (children[groupPosition][childPosition].mark) {
                     tv.setTextColor(getResources().getColor(R.color.black));
                     children[groupPosition][childPosition].mark = false;
+
+                    closeAllSelect(parent, v, groupPosition, childPosition);
+
                 } else {
                     tv.setTextColor(getResources().getColor(R.color.colorAccent));
                     children[groupPosition][childPosition].mark = true;
+
+                    checkAllSelectAndOpen(parent, v, groupPosition, childPosition);
                 }
 
 
@@ -169,16 +180,105 @@ public class MainActivity extends AppCompatActivity {
 //        });
     }
 
+    /**
+     * 检查是否开启全选
+     *
+     * @param parent        ExpandableListView
+     * @param v             点击的View
+     * @param groupPosition 选中的当前组
+     * @param childPosition 点击的View在当前组的位置
+     */
+    public void checkAllSelectAndOpen(ExpandableListView parent, View v, int groupPosition, int childPosition){
+        int markTrueCount = 0;
+        //遍历检查点击后是否相当于全选
+        for (int i = 1;i<children[groupPosition].length;i++){
+            if (children[groupPosition][i].mark){
+                //统计该组中选中的个数
+                markTrueCount++;
+            }
+        }
+        if(markTrueCount == children[groupPosition].length-1){
+            //该组中已经全选，选中全选
+            openAllSelect(parent, v, groupPosition, childPosition);
+        }
+    }
+
+    /**
+     * 开启全选选择
+     *
+     * @param parent        ExpandableListView
+     * @param v             点击的View
+     * @param groupPosition 选中的当前组
+     * @param childPosition 点击的View在当前组的位置
+     */
+    public void openAllSelect(ExpandableListView parent, View v, int groupPosition, int childPosition) {
+        //取消“全选”的标记状态
+        children[groupPosition][0].mark = true;
+        //取消“全选”的显示状态
+        //活得父类的子类个数（就是显示出来的总得条目行数）
+        int frontChild = 0;
+        for (int i = parent.getChildCount() - 1; i >= frontChild; i--) {
+            View child = parent.getChildAt(i);
+            //是否从头遍历到点击的View
+            if (child.equals(v)) {
+                //调整循环次数，使循环不必遍历完全，只需要定位到“全选”即可
+                frontChild = i - childPosition;
+            }
+
+            if (i == frontChild) {
+                //找到“全选”View后才执行，把“全选”改变显示状态
+                View child_tv = child.findViewById(R.id.tv);
+                if (child_tv instanceof TextView) {
+                    TextView childTextView = (TextView) child_tv;
+                    childTextView.setTextColor(getResources().getColor(R.color.colorAccent));
+                }
+            }
+        }
+    }
+
+    /**
+     * 关闭全选选择
+     *
+     * @param parent        ExpandableListView
+     * @param v             点击的View
+     * @param groupPosition 选中的当前组
+     * @param childPosition 点击的View在当前组的位置
+     */
+    public void closeAllSelect(ExpandableListView parent, View v, int groupPosition, int childPosition) {
+        //取消“全选”的标记状态
+        children[groupPosition][0].mark = false;
+        //取消“全选”的显示状态
+        //活得父类的子类个数（就是显示出来的总得条目行数）
+        int frontChild = 0;
+        for (int i = parent.getChildCount() - 1; i >= frontChild; i--) {
+            View child = parent.getChildAt(i);
+            //是否从头遍历到点击的View
+            if (child.equals(v)) {
+                //调整循环次数，使循环不必遍历完全，只需要定位到“全选”即可
+                frontChild = i - childPosition;
+            }
+
+            if (i == frontChild) {
+                //找到“全选”View后才执行，把“全选”改变显示状态
+                View child_tv = child.findViewById(R.id.tv);
+                if (child_tv instanceof TextView) {
+                    TextView childTextView = (TextView) child_tv;
+                    childTextView.setTextColor(getResources().getColor(R.color.black));
+                }
+            }
+        }
+    }
 
     /**
      * 全选切换
-     * @param parent ExpandableListView
-     * @param v 点击的View
+     *
+     * @param parent        ExpandableListView
+     * @param v             点击的View
      * @param groupPosition 选中的当前组
-     * @param mark 使该组标记值标记为mark
-     * @param TextColor 使该组显示状态改变为TextColor
+     * @param mark          使该组标记值标记为mark
+     * @param TextColor     使该组显示状态改变为TextColor
      */
-    public void switchAll(ExpandableListView parent, View v, int groupPosition, boolean mark, int TextColor){
+    public void switchAllSelect(ExpandableListView parent, View v, int groupPosition, boolean mark, int TextColor) {
         for (int i = 1; i < children[groupPosition].length; i++) {
             //改变全选指定的条目的标记值mark（不包含“全选”View）
             children[groupPosition][i].mark = mark;
@@ -195,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
                 isFindSelectAll = true;
             }
 
-            if(isFindSelectAll){
+            if (isFindSelectAll) {
                 //找到“全选”View后才执行，把“全选”后面属于它指定的条目改变显示状态
                 View child_tv = child.findViewById(R.id.tv);
                 if (child_tv instanceof TextView) {
