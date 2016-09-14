@@ -3,6 +3,8 @@ package com.qiyun.cyt.expandablelistview;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -218,6 +220,9 @@ public class MainActivity extends AppCompatActivity {
         //活得父类的子类个数（就是显示出来的总得条目行数）
         int frontChild = 0;
         for (int i = parent.getChildCount() - 1; i >= frontChild; i--) {
+            if(i<0){//考虑到上部分可能有未显示的item，保证position>=0
+                return;
+            }
             View child = parent.getChildAt(i);
             //是否从头遍历到点击的View
             if (child.equals(v)) {
@@ -251,8 +256,13 @@ public class MainActivity extends AppCompatActivity {
         //活得父类的子类个数（就是显示出来的总得条目行数）
         int frontChild = 0;
         for (int i = parent.getChildCount() - 1; i >= frontChild; i--) {
+
+            if(i<0){//考虑到上部分可能有未显示的item，保证position>=0
+                return;
+            }
+            Log.e("frontChild",frontChild + ",当前：" + i);
             View child = parent.getChildAt(i);
-            //是否从头遍历到点击的View
+            //是否从尾遍历到点击的View
             if (child.equals(v)) {
                 //调整循环次数，使循环不必遍历完全，只需要定位到“全选”即可
                 frontChild = i - childPosition;
@@ -266,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
                     childTextView.setTextColor(getResources().getColor(R.color.black));
                 }
             }
+
         }
     }
 
@@ -287,11 +298,12 @@ public class MainActivity extends AppCompatActivity {
         int childCount = parent.getChildCount();
         boolean isFindSelectAll = false;
         for (int i = 0; i < childCount; i++) {
+            Log.e("childCount",childCount + ",当前：" + i);
             View child = parent.getChildAt(i);
             //是否从头遍历到点击的“全选”View
             if (child.equals(v)) {
-                //调整循环次数，使循环不必遍历完全，只需要把该“全选”所指定的条目遍历到即可
-                childCount = i + children[groupPosition].length;
+                //调整循环次数，使循环不必遍历完全，只需要把该“全选”所指定的条目遍历到即可(考虑到可能有未显示出来的条目，这里取二者最小值)
+                childCount = i + children[groupPosition].length<childCount?i + children[groupPosition].length:childCount;
                 isFindSelectAll = true;
             }
 
@@ -314,5 +326,17 @@ public class MainActivity extends AppCompatActivity {
             this.name = name;
             this.mark = mark;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        return super.onOptionsItemSelected(item);
     }
 }
